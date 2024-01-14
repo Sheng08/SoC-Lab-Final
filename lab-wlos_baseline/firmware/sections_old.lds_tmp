@@ -1,4 +1,4 @@
-/* INCLUDE ../../generated/output_format.ld */
+* INCLUDE ../../generated/output_format.ld */
 
 OUTPUT_FORMAT("elf32-littleriscv")
 
@@ -14,8 +14,7 @@ MEMORY {
 	dff2 : ORIGIN = 0x00000400, LENGTH = 0x00000200
 	flash : ORIGIN = 0x10000000, LENGTH = 0x01000000
 	mprj : ORIGIN = 0x30000000, LENGTH = 0x00100000
-	sdrcode : ORIGIN = 0x38000000, LENGTH = 0x00000200
-	sdrdata : ORIGIN = 0x38000200, LENGTH = 0x00000200
+	mprjram : ORIGIN = 0x38000000, LENGTH = 0x00400000
 	hk : ORIGIN = 0x26000000, LENGTH = 0x00100000
 	csr : ORIGIN = 0xf0000000, LENGTH = 0x00010000
 }
@@ -31,6 +30,7 @@ SECTIONS
 		KEEP(*crt0*(.text))
 		KEEP(*(.text.isr))
 
+		/* *(.text .stub .text.* .gnu.linkonce.t.*) */
 		_etext = .;
 	} > flash
 
@@ -54,7 +54,7 @@ SECTIONS
 		*(.sdata .sdata.* .gnu.linkonce.s.*)
 		. = ALIGN(8);
 		_edata = .;
-	} > sdrdata AT > flash
+	} > dff AT > flash
 
 	.bss :
 	{
@@ -69,15 +69,14 @@ SECTIONS
 		. = ALIGN(8);
 		_ebss = .;
 		_end = .;
-	} > sdrdata AT > flash
+	} > dff AT > flash
 
 	.mprjram :
 	{
 		. = ALIGN(8);
 		_fsram = .;
 		*libgcc.a:*(.text .text.*)
-
-	} > sdrcode AT > flash
+	} > mprjram AT > flash
 }
 
 PROVIDE(_fstack = ORIGIN(dff2) + LENGTH(dff2));
@@ -85,5 +84,5 @@ PROVIDE(_fstack = ORIGIN(dff2) + LENGTH(dff2));
 PROVIDE(_fdata_rom = LOADADDR(.data));
 PROVIDE(_edata_rom = LOADADDR(.data) + SIZEOF(.data));
 
-PROVIDE(_esram = ORIGIN(sdrcode) + SIZEOF(.mprjram));
+PROVIDE(_esram = ORIGIN(mprjram) + SIZEOF(.mprjram));
 PROVIDE(_esram_rom = LOADADDR(.mprjram));
