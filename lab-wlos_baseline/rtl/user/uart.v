@@ -1,5 +1,5 @@
 module uart #(
-  parameter BAUD_RATE = 9600 
+  parameter BAUD_RATE = 9600
 )(
 `ifdef USE_POWER_PINS
     inout vccd1,	// User area 1 1.8V supply
@@ -37,7 +37,9 @@ module uart #(
 
   assign io_oeb[6] = 1'b0; // Set mprj_io_31 to output
   assign io_oeb[5] = 1'b1; // Set mprj_io_30 to input
+  //assign io_oeb[4] = 1'b0; // Set mprj_io_31 to output
   assign io_out[6] = tx;	// Connect mprj_io_6 to tx
+  //assign io_out[4] = o_ctrl_byte_finish;
   assign rx = io_in[5];	// Connect mprj_io_5 to rx
 
   // irq
@@ -47,7 +49,7 @@ module uart #(
   // CSR
   wire [7:0] rx_data; 
   wire irq_en;
-  wire rx_finish;
+  //wire rx_finish;
   wire rx_busy;
   wire [7:0] tx_data;
   wire tx_start_clear;
@@ -61,15 +63,17 @@ module uart #(
 
   wire [31:0] clk_div;
   assign clk_div = 40000000 / BAUD_RATE;
-
+	
+  
+  wire o_ctrl_byte_finish, o_rx_byte_finish;
   uart_receive receive(
     .rst_n      (~wb_rst_i  ),
     .clk        (wb_clk_i   ),
     .clk_div    (clk_div    ),
     .rx         (rx         ),
     .rx_data    (rx_data    ),
-    .rx_finish  (rx_finish  ),	// data receive finish
-    .irq        (irq        ),
+    .i_ctrl_byte_finish  (o_ctrl_byte_finish  ),	// data receive finish
+    .o_byte_finish(o_rx_byte_finish),
     .frame_err  (frame_err  ),
     .busy       (rx_busy    )
   );
@@ -86,24 +90,26 @@ module uart #(
   );
   
   ctrl ctrl(
-	.rst_n		(~wb_rst_i),
-	.clk		  (wb_clk_i	),
-  .i_wb_valid(wb_valid),
-	.i_wb_adr	(wbs_adr_i),
-	.i_wb_we	(wbs_we_i	),
-	.i_wb_dat	(wbs_dat_i),
-	.i_wb_sel	(wbs_sel_i),
-	.o_wb_ack	(wbs_ack_o),
-	.o_wb_dat (wbs_dat_o),
-	.i_rx		  (rx_data	),
-  .i_irq    (irq      ),
-  .i_frame_err  (frame_err),
-  .i_rx_busy    (rx_busy  ),
-	.o_rx_finish  (rx_finish),
-	.o_tx		      (tx_data	),
-	.i_tx_start_clear(tx_start_clear), 
-  .i_tx_busy    (tx_busy  ),
-	.o_tx_start	  (tx_start )
+	.rst_n		        (~wb_rst_i),
+	.clk		        (wb_clk_i	),
+    .clk_div            (clk_div    ),
+    .i_wb_valid         (wb_valid),
+	.i_wb_adr	        (wbs_adr_i),
+	.i_wb_we	        (wbs_we_i	),
+	.i_wb_dat	        (wbs_dat_i),
+	.i_wb_sel	        (wbs_sel_i),
+	.o_wb_ack	        (wbs_ack_o),
+	.o_wb_dat           (wbs_dat_o),
+	.i_rx		        (rx_data	),
+    .i_byte_finish      (o_rx_byte_finish),
+    .i_frame_err        (frame_err),
+    .i_rx_busy          (rx_busy  ),
+	.o_ctrl_byte_finish (o_ctrl_byte_finish),
+	.o_tx		        (tx_data	),
+	.i_tx_start_clear   (tx_start_clear), 
+    .i_tx_busy          (tx_busy  ),
+	.o_tx_start	        (tx_start ),
+	.o_irq              (irq)
   );
 
 endmodule

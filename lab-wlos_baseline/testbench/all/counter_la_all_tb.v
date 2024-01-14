@@ -38,6 +38,8 @@ module counter_la_all_tb;
 	assign uart_tx = mprj_io[6];
 	assign mprj_io[5] = uart_rx;
 
+	wire rx_finish, tx_finish;
+
 	always #12.5 clock <= (clock === 1'b0);
 
 	initial begin
@@ -243,9 +245,12 @@ module counter_la_all_tb;
 		delay = $random % 1000000 + 5000000;
 		$display("uart_task delay %d clocks", delay);
 		#(delay);
-		$display("uart_task starts at %d", $time);
+		send_data_1;
+		wait(tx_finish);
 		send_data_2;
-		$display("uart_task ends at %d", $time);
+		wait(tx_finish);
+		send_data_3;
+		
 	end endtask
 
 	task send_data_1;begin
@@ -264,6 +269,18 @@ module counter_la_all_tb;
 		@(posedge clock);
 		tx_start = 1;
 		tx_data = 61;
+		
+		#50;
+		wait(!tx_busy);
+		tx_start = 0;
+		$display("tx complete 2");
+		
+	end endtask
+
+	task send_data_3;begin
+		@(posedge clock);
+		tx_start = 1;
+		tx_data = 79;
 		
 		#50;
 		wait(!tx_busy);
@@ -355,7 +372,9 @@ module counter_la_all_tb;
 		.ser_tx(uart_rx),
 		.tx_data(tx_data),
 		.tx_busy(tx_busy),
-		.tx_clear_req(tx_clear_req)
+		.tx_clear_req(tx_clear_req),
+		.rx_finish(rx_finish),
+		.tx_finish(tx_finish)
 	);
 
 endmodule

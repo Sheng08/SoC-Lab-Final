@@ -44,6 +44,7 @@ proc checkRequiredFiles { origin_dir} {
  "[file normalize "$origin_dir/vvd_srcs/caravel_soc/rtl/user/uart_tx.v"]"\
  "[file normalize "$origin_dir/vvd_srcs/caravel_soc/rtl/user/uart_rx.v"]"\
  "[file normalize "$origin_dir/vvd_srcs/caravel_soc/rtl/user/uart_ctrl.v"]"\
+ "[file normalize "$origin_dir/vvd_srcs/caravel_soc/rtl/user/uart_fifo.v"]"\
  "[file normalize "$origin_dir/vvd_srcs/caravel_soc/rtl/user/bram.v"]"\
  "[file normalize "$origin_dir/vvd_srcs/caravel_soc/rtl/user/user_proj_example.counter.v"]"\
  "[file normalize "$origin_dir/vvd_srcs/caravel_soc/rtl/user/WB_DECODE.v"]"\
@@ -213,6 +214,7 @@ set files [list \
  [file normalize "${origin_dir}/vvd_srcs/caravel_soc/rtl/user/uart_tx.v"] \
  [file normalize "${origin_dir}/vvd_srcs/caravel_soc/rtl/user/uart_rx.v"] \
  [file normalize "${origin_dir}/vvd_srcs/caravel_soc/rtl/user/uart_ctrl.v"] \
+  [file normalize "${origin_dir}/vvd_srcs/caravel_soc/rtl/user/uart_fifo.v"] \
  [file normalize "${origin_dir}/vvd_srcs/caravel_soc/rtl/user/user_proj_example.counter.v"] \
  [file normalize "${origin_dir}/vvd_srcs/caravel_soc/rtl/user/WB_DECODE.v"] \
  [file normalize "${origin_dir}/vvd_srcs/caravel_soc/rtl/user/bram.v"] \

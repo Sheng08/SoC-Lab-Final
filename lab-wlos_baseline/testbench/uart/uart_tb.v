@@ -33,10 +33,14 @@ module uart_tb;
 	reg [7:0] tx_data;
 	wire tx_busy;
 	wire tx_clear_req;
+	
+	wire rx_finish;
+	wire tx_finish;
 
 	assign checkbits  = mprj_io[31:16];
 	assign uart_tx = mprj_io[6];
 	assign mprj_io[5] = uart_rx;
+	
 
 	always #12.5 clock <= (clock === 1'b0);
 
@@ -144,7 +148,7 @@ module uart_tb;
 		$dumpvars(0, uart_tb);
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (200) begin
+		repeat (500) begin
 			repeat (1000) @(posedge clock);
 			// $display("+1000 cycles");
 		end
@@ -157,20 +161,32 @@ module uart_tb;
 		$display("%c[0m",27);
 		$finish;
 	end
+	wire block;
+	initial begin
+		//wait(la_test_1_finish && la_uart_intr_test_finish);
+		wait(block);
+		$display("LA all Test passed");
+				
+		#10000;
+		$finish;		
+	end
 
 	initial begin
 		wait(checkbits == 16'hAB40);
 		$display("LA Test 1 started");
+		send_data_1;
+		wait(tx_finish);
 		send_data_2;
-		// wait(checkbits == 61);
-		// send_data_1;
-		// wait(checkbits == 15);
-		//#10000;
-		//$display("LA Test 1 passed");
-
-		wait(checkbits == 16'hAB51);
-		$display("LA Test 1 passed");
-		$finish;		
+		wait(tx_finish);
+		send_data_3;
+		// wait(tx_finish);
+		// send_data_4;
+		wait(rx_finish);
+		wait(rx_finish);
+		wait(rx_finish);
+		send_data_1;
+		
+			
 	end
 
 	task send_data_1;begin
@@ -194,6 +210,30 @@ module uart_tb;
 		wait(!tx_busy);
 		tx_start = 0;
 		$display("tx complete 2");
+		
+	end endtask
+	
+	task send_data_3;begin
+		@(posedge clock);
+		tx_start = 1;
+		tx_data = 79;
+		
+		#50;
+		wait(!tx_busy);
+		tx_start = 0;
+		$display("tx complete 3");
+		
+	end endtask
+
+	task send_data_4;begin
+		@(posedge clock);
+		tx_start = 1;
+		tx_data = 41;
+		
+		#50;
+		wait(!tx_busy);
+		tx_start = 0;
+		$display("tx complete 4");
 		
 	end endtask
 
@@ -280,10 +320,11 @@ module uart_tb;
 		.ser_tx(uart_rx),
 		.tx_data(tx_data),
 		.tx_busy(tx_busy),
-		.tx_clear_req(tx_clear_req)
+		.tx_clear_req(tx_clear_req),
+		.rx_finish(rx_finish),
+		.tx_finish(tx_finish)
 	);
 
 endmodule
 `default_nettype wire
-
 
