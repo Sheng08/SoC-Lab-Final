@@ -149,10 +149,10 @@ void main()
 	#endif
 
     // ==================== qsort ====================
-	int delay = 0;
+	// int delay = 0;
     int *tmp_qs = qsort();
-	while(delay < 500){ delay++; }
-	delay = 0;
+	// while(delay < 500){ delay++; }
+	// delay = 0;
 	reg_mprj_datal = *tmp_qs << 16;
 	reg_mprj_datal = *(tmp_qs+1) << 16;
 	reg_mprj_datal = *(tmp_qs+2) << 16;

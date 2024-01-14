@@ -13,7 +13,7 @@
 // limitations under the License.
 // SPDX-License-Identifier: Apache-2.0
 
-`default_nettype none
+`default_nettype wire
 /*
  *-------------------------------------------------------------
  *
@@ -102,22 +102,22 @@ user_proj_example mprj (
     .wbs_adr_i(wbs_adr_i),
     .wbs_dat_i(wbs_dat_i),
     .wbs_ack_o(exemem_wbs_ack_o),
-    .wbs_dat_o(exemem_wbs_dat_o),
+    .wbs_dat_o(exemem_wbs_dat_o)
 
     // Logic Analyzer
 
-    .la_data_in(la_data_in),
-    .la_data_out(la_data_out),
-    .la_oenb (la_oenb),
+    // .la_data_in(la_data_in),
+    // .la_data_out(la_data_out),
+    // .la_oenb (la_oenb),
 
     // IO Pads
 
-    .io_in (io_in),
-    .io_out(io_out),
-    .io_oeb(io_oeb),
+    // .io_in (io_in),
+    // .io_out(io_out),
+    // .io_oeb(io_oeb),
 
     // IRQ
-    .irq(user_irq)
+    // .irq(user_irq)
 );
 
 uart uart (

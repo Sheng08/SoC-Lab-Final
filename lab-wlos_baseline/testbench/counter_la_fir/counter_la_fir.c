@@ -22,12 +22,10 @@
 #include <irq_vex.h>
 #endif
 
-// matmul
-extern int* matmul();
+
 // fir
 extern int* fir();
-// qsort
-extern int* qsort();
+
 // uart
 extern void uart_write();
 extern void uart_write_char();
@@ -156,6 +154,8 @@ void main()
 
     // ==================== fir ====================
     int* tmp_fir = fir();
+	while(delay < 500){ delay++; }
+	delay = 0;
 	reg_mprj_datal = *(tmp_fir+7) << 16;
 	reg_mprj_datal = *(tmp_fir+8) << 16;
 	reg_mprj_datal = *(tmp_fir+9) << 16;

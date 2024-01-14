@@ -144,18 +144,18 @@ module counter_la_fir_tb;
 		$dumpvars(0, counter_la_fir_tb);
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		// repeat (200) begin
-		// 	repeat (3000) @(posedge clock);
-		// 	// $display("+1000 cycles");
-		// end
-		// $display("%c[1;31m",27);
-		// `ifdef GL
-		// 	$display ("Monitor: Timeout, Test LA (GL) Failed");
-		// `else
-		// 	$display ("Monitor: Timeout, Test LA (RTL) Failed");
-		// `endif
-		// $display("%c[0m",27);
-		// $finish;
+		repeat (200) begin
+			repeat (1000) @(posedge clock);
+			// $display("+1000 cycles");
+		end
+		$display("%c[1;31m",27);
+		`ifdef GL
+			$display ("Monitor: Timeout, Test LA (GL) Failed");
+		`else
+			$display ("Monitor: Timeout, Test LA (RTL) Failed");
+		`endif
+		$display("%c[0m",27);
+		$finish;
 	end
 
 	initial begin
@@ -163,7 +163,7 @@ module counter_la_fir_tb;
 			user_exec_task;
 			uart_task;
 		join
-		repeat(10000) @(posedge clock);
+		repeat(200000) @(posedge clock);
 		$finish;
 	end
 
@@ -206,17 +206,20 @@ module counter_la_fir_tb;
 		// wait(checkbits == 61);
 		// send_data_1;
 		// wait(checkbits == 15);
-		//#10000;
+		// #10000;
 		//$display("LA Test 1 passed");
 
-		// wait(checkbits == 16'hAB51);
+		wait(checkbits == 16'hAB51);
 		$display("LA Test 1 passed");
+		// #200000;
+		// $display($time);
 		// $finish;		
 	end endtask
 
 	reg [31:0]	delay;
 	task uart_task; begin
-		delay = $random % 1000000 + 5000000;
+		// delay = $random % 1000000 + 5000000;
+		delay = $random % 1000000 + 800000;
 		$display("uart_task delay %d clocks", delay);
 		#(delay);
 		$display("uart_task starts at %d", $time);
