@@ -54,20 +54,20 @@ module user_proj_example #(
     input [31:0] wbs_dat_i,
     input [31:0] wbs_adr_i,
     output wbs_ack_o,
-    output [31:0] wbs_dat_o,
+    output [31:0] wbs_dat_o
 
     // Logic Analyzer Signals
-    input  [127:0] la_data_in,
-    output [127:0] la_data_out,
-    input  [127:0] la_oenb,
+    // input  [127:0] la_data_in,
+    // output [127:0] la_data_out,
+    // input  [127:0] la_oenb,
 
-    // IOs
-    input  [`MPRJ_IO_PADS-1:0] io_in,
-    output [`MPRJ_IO_PADS-1:0] io_out,
-    output [`MPRJ_IO_PADS-1:0] io_oeb,
+    // // IOs
+    // input  [`MPRJ_IO_PADS-1:0] io_in,
+    // output [`MPRJ_IO_PADS-1:0] io_out,
+    // output [`MPRJ_IO_PADS-1:0] io_oeb,
 
-    // IRQ
-    output [2:0] irq
+    // // IRQ
+    // output [2:0] irq
 );
     wire clk;
     wire rst, rst_n;
@@ -76,8 +76,8 @@ module user_proj_example #(
     wire [`MPRJ_IO_PADS-1:0] io_out;
     wire [`MPRJ_IO_PADS-1:0] io_oeb;
 
-   
-    
+    wire valid;
+
     wire sdram_cle;
     wire sdram_cs;
     wire sdram_cas;
@@ -95,108 +95,89 @@ module user_proj_example #(
     wire ctrl_in_valid, ctrl_out_valid;
 
     reg ctrl_in_valid_q;
-
-    wire [31:0] rdata; 
-    wire [31:0] wdata;
-    reg [BITS-1:0] count;
     
-    wire valid;
-    wire [3:0] wstrb;
-    wire [31:0] la_write;
-    wire decoded;
-    wire [31:0]exmem_addr;
-
-    reg ready;
-    reg [BITS-17:0] delayed_count;
-
     // WB MI A
     
-    // assign valid = wbs_stb_i && wbs_cyc_i;
-    assign ctrl_in_valid = wbs_we_i ? valid : ~ctrl_in_valid_q && valid;
-    assign wbs_ack_o = (wbs_we_i) ? ~ctrl_busy && valid : ctrl_out_valid; 
+    assign valid = wbs_stb_i && wbs_cyc_i;
+    assign ctrl_in_valid = wbs_we_i ? valid : ~ctrl_in_valid_q && valid && !ctrl_busy;
+    //assign wbs_ack_o = (wbs_we_i) ? ~ctrl_busy && valid : ctrl_out_valid && valid && user_addr == last_in_addr;
+    assign wbs_ack_o = (wbs_we_i) ? ~ctrl_busy && valid : ctrl_out_valid && valid && (diff==4);// && (diff>=0); 
     assign bram_mask = wbs_sel_i & {4{wbs_we_i}};
-    //assign ctrl_addr = wbs_adr_i[22:0];
-    assign ctrl_addr = (request_code) ? code_addr:
-    			(request_data) ? data_addr : wbs_adr_i[22:0] ;
-    assign valid = wbs_cyc_i && wbs_stb_i && decoded; 
-    assign wstrb = wbs_sel_i & {4{wbs_we_i}};
-    assign wbs_dat_o = rdata;
-    assign wdata = wbs_dat_i;
-    // assign wbs_ack_o = ready;
+    assign ctrl_addr = wbs_adr_i[22:0];
 
     // IO
-    assign io_out = d2c_data;
-    assign io_oeb = {(`MPRJ_IO_PADS-1){rst}};
+    // assign io_out = d2c_data;
+    // assign io_oeb = {(`MPRJ_IO_PADS-1){rst}};
 
     // IRQ
-    assign irq = 3'b000;	// Unused
+    // assign irq = 3'b000;	// Unused
 
     // LA
-    assign la_data_out = {{(127-BITS){1'b0}}, d2c_data};
-    // Assuming LA probes [65:64] are for controlling the count clk & reset  
+    // assign la_data_out = {{(127-BITS){1'b0}}, d2c_data};
+    // // Assuming LA probes [65:64] are for controlling the count clk & reset  
     // assign clk = (~la_oenb[64]) ? la_data_in[64]: wb_clk_i;
     // assign rst = (~la_oenb[65]) ? la_data_in[65]: wb_rst_i;
+    // assign rst_n = ~rst;
+
     assign clk = wb_clk_i;
     assign rst = wb_rst_i;
     assign rst_n = ~rst;
 
-    assign decoded = wbs_adr_i[31:20] == 12'h380 ? 1'b1 : 1'b0;
-    assign exmem_addr = { {8{1'b0}}, wbs_adr_i[23:0]};
-
     always @(posedge clk) begin
         if (rst) begin
             ctrl_in_valid_q <= 1'b0;
-            // ready <= 1'b0;
-            // delayed_count <= 16'b0;
         end
         else begin
             if (~wbs_we_i && valid && ~ctrl_busy && ctrl_in_valid_q == 1'b0)
                 ctrl_in_valid_q <= 1'b1;
-            else if (ctrl_out_valid)
+            else if (ctrl_out_valid || ~ctrl_busy)
                 ctrl_in_valid_q <= 1'b0;
-            // ready <= 1'b0;
-            // if ( valid && !ready ) begin
-            //     if ( delayed_count == DELAYS ) begin
-            //         delayed_count <= 16'b0;
-            //         ready <= 1'b1;
-            //     end else begin
-            //         delayed_count <= delayed_count + 1;
-            //     end
-            // end
         end
     end
-    
-    // request signal
-    wire request_data, request_code, request_mprj;
-    wire[1:0] code_bank, data_bank;
-    wire [22:0] code_addr, data_addr;
 
-    // assign request_data = (wbs_stb_i & wbs_cyc_i &(wbs_adr_i[31:24] == 8'h30)) ? 1 : 0;
-    assign request_data = (wbs_stb_i & wbs_cyc_i &(wbs_adr_i[11:8] == 4'b0 | wbs_adr_i[11:8] == 4'b1)) ? 1 : 0;
-    // assign request_data = (wbs_stb_i & wbs_cyc_i &(wbs_adr_i[15:12] == 4'b1)) ? 1 : 0;
-    assign request_mprj = ((wbs_adr_i[31:24] == 8'h26)) ? 1 : 0;
-    // assign request_code = (wbs_stb_i & wbs_cyc_i &(wbs_adr_i[31:24] == 8'h38)) ? 1 : 0;
-    assign request_code = (wbs_stb_i & wbs_cyc_i &(wbs_adr_i[11:8] == 4'b0010 | wbs_adr_i[11:8] == 4'b0011)) ? 1 : 0;
-    // assign request_code = (wbs_stb_i & wbs_cyc_i &(wbs_adr_i[15:12] == 4'b0)) ? 1 : 0;
 
-    assign code_bank = (wbs_adr_i[9:8]>2'b01) ? (wbs_adr_i[9:8]-2'b10) : wbs_adr_i[9:8];
-    assign code_addr = (request_code) ? {wbs_adr_i[22:10], code_bank, wbs_adr_i[7:0]} : 0;
-    assign data_bank = (wbs_adr_i[21:8]<2'b10) ? (wbs_adr_i[9:8]+2'b10) : wbs_adr_i[9:8];
-    assign data_addr = (request_data) ? {wbs_adr_i[22:10], data_bank, wbs_adr_i[7:0]} : 0;
+	////////////////////////////////    prefetch    ////////////////////////////
+	
+	reg [22:0] next_addr;
+	reg next_in;
+	reg [22:0] last_in_addr;
+	
+	
+	wire [22:0] user_addr;
+	wire [22:0] diff;
+	
+	//assign diff = user_addr-last_in_addr;
+	assign diff = last_in_addr-ctrl_addr;
+	
+	assign user_addr = (next_in && valid && !wbs_we_i ) ? next_addr : ctrl_addr;
+	
+	always@(posedge clk)begin
+		if(rst)
+			next_addr <= 0;
+		else
+			next_addr <= (ctrl_in_valid && !wbs_we_i) ? user_addr + 4 : next_addr;
+	end
+	
+	always@(posedge clk)begin
+		if(rst)
+			next_in <= 0;
+		else begin
+			if(valid && !wbs_we_i)
+				next_in <= (ctrl_in_valid_q) ? 1 : next_in;
+			else
+				next_in <= 0;
+		end
+	end
+	
+	always@(posedge clk)begin
+		if(rst)
+			last_in_addr <= 0;
+		else begin
+			last_in_addr <= (valid && ctrl_in_valid) ? user_addr : last_in_addr;
+		end
+	end
 
-    always @(posedge clk) begin
-    	if (rst) begin
-    	    count <= 0;
-    	end else if (count == 0) begin
-    	    if ((wbs_adr_i == 32'h38000000) && valid && (|wstrb == 1'b0)) begin
-    	        count <= count + 1;
-    	    end else begin
-    	        count <= count;
-    	    end
-    	end else begin
-    	    count <= count + 1;
-    	end
-    end
+	////////////////////////////////////////////////////////////////////////////
 
     sdram_controller user_sdram_controller (
         .clk(clk),
@@ -213,7 +194,7 @@ module user_proj_example #(
         .sdram_dqi(d2c_data),
         .sdram_dqo(c2d_data),
 
-        .user_addr(ctrl_addr),
+        .user_addr(user_addr),
         .rw(wbs_we_i),
         .data_in(wbs_dat_i),
         .data_out(wbs_dat_o),
@@ -221,7 +202,7 @@ module user_proj_example #(
         .in_valid(ctrl_in_valid),
         .out_valid(ctrl_out_valid)
     );
-    
+
     sdr user_bram (
         .Rst_n(rst_n),
         .Clk(clk),
