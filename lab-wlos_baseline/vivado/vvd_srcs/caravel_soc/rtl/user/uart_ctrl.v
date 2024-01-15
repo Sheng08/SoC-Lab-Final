@@ -76,7 +76,9 @@ always@(posedge clk or negedge rst_n)begin
         //     stat_reg[1:0] <= 2'b00;
         // else if (rx_fifo_empty)
         //     stat_reg[1:0] <= 2'b01;
-        stat_reg[1:0] <= {rx_fifo_full, rx_fifo_empty & ((o_ctrl_byte_finish & o_irq_request) || irq_force)};
+        // stat_reg[1:0] <= {rx_fifo_full, rx_fifo_empty & ((o_ctrl_byte_finish & o_irq_request) || irq_force)};
+
+        stat_reg[1:0] <= {rx_fifo_full, rx_fifo_empty};
 
         //stat_reg[9:8] <= data_cnt_reg;
     end

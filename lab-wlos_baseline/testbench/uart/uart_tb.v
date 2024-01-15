@@ -179,7 +179,6 @@ module uart_tb;
 		send_data_2;
 		wait(tx_finish);
 		send_data_3;
-		wait(tx_finish);
 		wait_rx;
 		wait_rx;
 		wait_rx;
