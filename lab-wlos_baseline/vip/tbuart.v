@@ -57,6 +57,8 @@ module tbuart (
 		tx_clear_req = 0;
 		clk_div = 40000000/baud_rate;
 		clk_cnt = 0;
+		rx_finish=0;
+		tx_finish=0;
 	end
 
 	always #52083 clk <= ~clk;

@@ -76,7 +76,7 @@ always@(posedge clk or negedge rst_n)begin
         //     stat_reg[1:0] <= 2'b00;
         // else if (rx_fifo_empty)
         //     stat_reg[1:0] <= 2'b01;
-        stat_reg[1:0] <= {rx_fifo_full, rx_fifo_empty};
+        stat_reg[1:0] <= {rx_fifo_full, rx_fifo_empty & ((o_ctrl_byte_finish & o_irq_request) || irq_force)};
 
         //stat_reg[9:8] <= data_cnt_reg;
     end
@@ -192,7 +192,7 @@ reg     irq_force;
 reg [31:0]irq_counter;
 
 wire [$clog2(DEPTH)-1:0] data_cnt;
-reg [$clog2(DEPTH)-1:0] data_cnt_reg, data_cnt_prev;
+reg [$clog2(DEPTH)-1:0] data_cnt_reg;
 
 always@(posedge clk)begin
 	if(o_irq || rx_fifo_empty) begin
@@ -203,7 +203,7 @@ always@(posedge clk)begin
         // $display("data_cnt: %d", data_cnt);
         irq_force <= 1; 
     end 
-    else if (i_tx_busy || (data_cnt > data_cnt_prev))begin
+    else if (i_tx_busy || i_byte_finish)begin
         irq_counter <= 0;
     end
     else begin 
@@ -214,15 +214,15 @@ always@(posedge clk)begin
     if(o_irq) data_cnt_reg <= data_cnt; 
 end
 
-always@(posedge clk)begin
-    if(!rst_n)begin
-        data_cnt_prev <= 0;
-    end else begin
-        if(i_byte_finish && !stat_reg[1] && !i_frame_err)begin 
-            data_cnt_prev <= data_cnt;
-        end
-    end
-end
+// always@(posedge clk)begin
+//     if(!rst_n)begin
+//         data_cnt_prev <= 0;
+//     end else begin
+//         if(i_byte_finish && !stat_reg[1] && !i_frame_err)begin 
+//             data_cnt_prev <= data_cnt;
+//         end
+//     end
+// end
 
 wire rx_fifo_full, rx_fifo_empty, o_irq_request;
 wire [7:0] rx_fifo_o_data;

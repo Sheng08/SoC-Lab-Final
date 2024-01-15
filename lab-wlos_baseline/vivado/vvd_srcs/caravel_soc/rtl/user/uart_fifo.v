@@ -32,9 +32,9 @@ module uart_fifo #(
     end
   end
 
-  always@(*)begin
-    $display("data_cnt: %d", cnt);
-  end
+  // always@(*)begin
+  //   $display("data_cnt: %d", cnt);
+  // end
   
   // To read data from FIFO
   always@(posedge clk) begin
@@ -42,7 +42,7 @@ module uart_fifo #(
       data_out <= fifo[r_ptr];
       r_ptr <= r_ptr + 1;
       cnt <= cnt - 1;
-      $display("read data: %d", fifo[r_ptr]);
+      // $display("read data: %d", fifo[r_ptr]);
     end
   end
 
