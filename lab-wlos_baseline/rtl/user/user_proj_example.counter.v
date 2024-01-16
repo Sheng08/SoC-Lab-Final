@@ -136,9 +136,9 @@ module user_proj_example #(
     end
 
 
-	////////////////////////////////    prefetch    ////////////////////////////
+	// ======================== Prefetch ========================
 	
-	reg [22:0] next_addr;
+	reg [22:0] prefetch_addr;
 	reg next_in;
 	reg [22:0] last_in_addr;
 	
@@ -147,15 +147,15 @@ module user_proj_example #(
 	wire [22:0] diff;
 	
 	//assign diff = user_addr-last_in_addr;
-	assign diff = last_in_addr-ctrl_addr;
+	assign diff = last_in_addr - ctrl_addr;
 	
-	assign user_addr = (next_in && valid && !wbs_we_i ) ? next_addr : ctrl_addr;
+	assign user_addr = (next_in && valid && !wbs_we_i ) ? prefetch_addr : ctrl_addr;
 	
 	always@(posedge clk)begin
 		if(rst)
-			next_addr <= 0;
+			prefetch_addr <= 0;
 		else
-			next_addr <= (ctrl_in_valid && !wbs_we_i) ? user_addr + 4 : next_addr;
+			prefetch_addr <= (ctrl_in_valid && !wbs_we_i) ? user_addr + 4 : prefetch_addr;
 	end
 	
 	always@(posedge clk)begin
@@ -177,7 +177,7 @@ module user_proj_example #(
 		end
 	end
 
-	////////////////////////////////////////////////////////////////////////////
+	// ==========================================================
 
     sdram_controller user_sdram_controller (
         .clk(clk),
