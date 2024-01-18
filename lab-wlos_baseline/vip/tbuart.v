@@ -9,7 +9,9 @@ module tbuart (
 	output reg ser_tx,
 	input [7:0] tx_data,
 	output reg tx_busy,
-	output reg tx_clear_req
+	output reg tx_clear_req,
+	output reg rx_finish,
+	output reg tx_finish
 );
 	reg [2:0] recv_state;
 	reg [2:0] recv_next_state;
@@ -55,6 +57,8 @@ module tbuart (
 		tx_clear_req = 0;
 		clk_div = 40000000/baud_rate;
 		clk_cnt = 0;
+		rx_finish=0;
+		tx_finish=0;
 	end
 
 	always #52083 clk <= ~clk;
@@ -112,7 +116,9 @@ module tbuart (
 		if(recv_state==R_STOP_BIT)begin
 			recv_buf_data <= {recv_buf_data, recv_pattern};
 			$display("recevied word %d", recv_pattern);
+			rx_finish<=1;
 		end
+		else	rx_finish<=0;
 	end
 	
 	// --------------------Transmitter------------------------//
@@ -190,6 +196,14 @@ module tbuart (
 			tx_busy = 1;
 		else if(tr_state == T_CLEAR)
 			tx_busy = 0;
+	end
+	
+	always@(posedge clk)begin //tx_finish
+		if(tr_state==T_CLEAR)begin
+			
+			tx_finish<=1;
+		end
+		else	tx_finish<=0;
 	end
 
 endmodule

@@ -8,6 +8,8 @@
 #define reg_tx_data          (*(volatile uint32_t*)0x30000004)
 #define reg_uart_stat        (*(volatile uint32_t*)0x30000008)
 #define reg_uart_clkdiv      (*(volatile uint32_t*)0x3000000c)
+#define reg_uart_rx_fifo_cnt (*(volatile uint32_t*)0x30000010)
+// #define reg_uart_tx_fifo_cnt (*(volatile uint32_t*)0x30000014)
 
 
 #endif

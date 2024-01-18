@@ -1,0 +1,2 @@
+rm -rf vivado/vvd_srcs/caravel_soc/rtl/user/*
+cp ./rtl/user/* vivado/vvd_srcs/caravel_soc/rtl/user/

@@ -9,6 +9,7 @@
 -v ../../rtl/user/uart_rx.v 
 -v ../../rtl/user/uart_ctrl.v
 -v ../../rtl/user/WB_DECODE.v
+-v ../../rtl/user/uart_fifo.v
 -v ../../rtl/user/user_proj_example.counter.v
 
 ## VIP

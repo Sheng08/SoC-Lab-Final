@@ -31,12 +31,17 @@ void isr(void)
 
 #else
     uint32_t irqs = irq_pending() & irq_getmask();
-    int buf;
-
+    int buf[32] = {0};
+    
     if ( irqs & (1 << USER_IRQ_0_INTERRUPT)) {
         user_irq_0_ev_pending_write(1); //Clear Interrupt Pending Event
-        buf = uart_read();
-        uart_write(buf);
+        int cnt = reg_uart_rx_fifo_cnt;
+        for (int i = 0; i < cnt; i++) {
+            buf[i] = uart_read();
+            uart_write(buf[i]);
+        }
+        // buf = uart_read();
+        // uart_write(buf);
 
     }
 #endif
