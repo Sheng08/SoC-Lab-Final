@@ -176,13 +176,14 @@ module uart_tb;
 		$display("LA Test 1 started");
 		send_data_1;
 		wait(tx_finish);
-		send_data_2;
-		wait(tx_finish);
-		send_data_3;
+		// send_data_2;
+		send_special_data;
+		// wait(tx_finish);
+		// send_data_3;
 		wait_rx;
-		send_data_4;
-		wait_rx;
-		wait_rx;
+		// send_data_4;
+		// wait_rx;
+		// wait_rx;
 		wait_rx;
 		block = 1;
 		// wait(tx_finish);
@@ -242,6 +243,18 @@ module uart_tb;
 		wait(!tx_busy);
 		tx_start = 0;
 		$display("tx complete 4");
+		
+	end endtask
+
+	task send_special_data;begin
+		@(posedge clock);
+		tx_start = 1;
+		tx_data = 35;
+		
+		#50;
+		wait(!tx_busy);
+		tx_start = 0;
+		$display("tx complete special");
 		
 	end endtask
 

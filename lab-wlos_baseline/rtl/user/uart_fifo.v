@@ -49,12 +49,23 @@ module uart_fifo #(
   // always@(posedge clk)begin
   //   irq_request_d <= irq_request;
   // end
+
+  wire special_data;
+  reg special_data_d;
   
+  assign special_data = ((data_in == 8'd35) & w_en); // special char == '#'
+
+  always@(posedge clk)begin
+    if(!rst_n)begin
+      special_data_d <= 0;
+    end else begin
+      special_data_d <= special_data;
+    end
+  end
+
   assign full = ((w_ptr+1'b1) == r_ptr);
   assign empty = (w_ptr == r_ptr);
-  //assign irq_request = ((r_ptr + (DEPTH >>1)) == w_ptr) || ((w_ptr + (DEPTH >>1)) == r_ptr) ;
-  // assign irq_request = (r_ptr[$clog2(DEPTH)-1] == ~w_ptr[$clog2(DEPTH)-1]) && (r_ptr[$clog2(DEPTH)-2:0] == w_ptr[$clog2(DEPTH)-2:0]) ;
-  assign irq_request = full;
-  // assign cnt = (w_ptr > r_ptr) ? w_ptr - r_ptr :
-  //                   (w_ptr < r_ptr) ? r_ptr - w_ptr : 0 ;
+  
+  assign irq_request = full || special_data_d;
+  
 endmodule
